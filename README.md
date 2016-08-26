@@ -3,7 +3,7 @@ Track submissions and problems solved for a group of users on UVa.
 More problem solving platforms will be added in the future.
 
 ## Todo list (in rough priority order)
-- [ ] Move to github
+- [x] Move to github
 - [ ] Revamp data model, allow other platforms
 - [ ] Allow specifying full name in input
 - [ ] Add link to PDF
