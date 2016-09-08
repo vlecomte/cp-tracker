@@ -4,6 +4,7 @@ More problem solving platforms will be added in the future.
 
 ## Todo list (in rough priority order)
 - [x] Move to github
+- [ ] Move to HTTPS ([https://uhunt.onlinejudge.org/api])
 - [ ] Revamp data model, allow other platforms
 - [ ] Allow specifying full name in input
 - [ ] Add link to PDF
