@@ -1,6 +1,7 @@
 /*global JsonPromise, CachedResults*/
 
 var uh = {
+    apiUrl : "https://uhunt.onlinejudge.org/api/",
     verdicts : {
         0: "???",
         10: "Submission error",
@@ -25,11 +26,11 @@ var uh = {
     },
     problemData : new CachedResults(function (problemId) {
         "use strict";
-        return new JsonPromise("http://uhunt.felix-halim.net/api/p/id/" + problemId);
+        return new JsonPromise(uh.apiUrl + "p/id/" + problemId);
     }),
     userData : new CachedResults(function (userId) {
         "use strict";
-        return new JsonPromise("http://uhunt.felix-halim.net/api/subs-user/" + userId)
+        return new JsonPromise(uh.apiUrl + "subs-user/" + userId)
             .then(function (result) {
                 var data = {
                     name: result.name,
