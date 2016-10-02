@@ -1,6 +1,6 @@
 /*global console, users, Promise, JsonPromise, CachedResults*/
 
-function UhuntLike(judgeName, url, apiUrl) {
+function UhuntLike(judgeName, apiUrl, pdfUrl) {
     "use strict";
     var verdicts = {
             0: "???",
@@ -24,7 +24,6 @@ function UhuntLike(judgeName, url, apiUrl) {
             4: "Pascal",
             5: "C++11"
         },
-        pdfUrl = url + "external/",
         Problem = function (num, title) {
             this.num = num;
             this.title = title;
@@ -60,10 +59,10 @@ function UhuntLike(judgeName, url, apiUrl) {
     };
 }
 
-var uh = new UhuntLike("UVa", "https://uhunt.onlinejudge.org/",
-                       "https://uhunt.onlinejudge.org/api/");
-var la = new UhuntLike("LA", "https://icpcarchive.ecs.baylor.edu/",
-                       "https://icpcarchive.ecs.baylor.edu/uhunt/api/");
+var uh = new UhuntLike("UVa", "https://uhunt.onlinejudge.org/api/",
+                       "https://uva.onlinejudge.org/external/");
+var la = new UhuntLike("LA", "https://icpcarchive.ecs.baylor.edu/uhunt/api/",
+                        "https://icpcarchive.ecs.baylor.edu/external/");
 
 var judges = [uh, la];
 
