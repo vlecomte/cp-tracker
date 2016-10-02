@@ -1,8 +1,7 @@
 /*global console, makeCell, getAllSubs*/
 
 var numSubs = 20; // Number of last submissions to display
-var refreshTime = 5000; // Time between refreshes (millis)
-var problemPageBase = "https://uva.onlinejudge.org/external/";
+var ls_last_sub_num = 0;
 
 function formatTime(timestamp) {
     "use strict";
@@ -28,7 +27,7 @@ function makeSubmissionRow(sub) {
     
     problemCell.appendChild(problemLink);
     
-    sub.problem.then(function (problem) {
+    sub.getProblem().then(function (problem) {
         problemLink.href = problem.pdfLink;
         problemLink.textContent = problem.displayName;
     });
@@ -47,6 +46,11 @@ function refreshTable() {
     var subTable = document.getElementById("submissions-table");
     
     function computeTable(subs) {
+        // Avoid updates that don't change anything
+        if (subs.length === ls_last_sub_num) {
+            return;
+        }
+        ls_last_sub_num = subs.length;
         // Truncate to first numSubs elements
         subs.length = Math.min(subs.length, numSubs);
         // Clear and refill table
@@ -61,4 +65,4 @@ function refreshTable() {
 }
 
 refreshTable();
-setInterval(refreshTable, refreshTime);
+setInterval(refreshTable, 5000);

@@ -1,7 +1,7 @@
 /*global console, uh, uhuntIds, makeCell, getAllSubs*/
 
 var numDays = 15; // Time period to compare users
-var refreshTime = 5000; // Time between refreshes (millis)
+var ts_last_sub_num = 0;
 
 function makeTopSolverRow(rank, user) {
     "use strict";
@@ -32,6 +32,12 @@ function refreshTable() {
     }
     
     getAllSubs().then(function (subs) {
+        // Avoid updates that don't change anything
+        if (subs.length === ts_last_sub_num) {
+            return;
+        }
+        ts_last_sub_num = subs.length;
+        
         var firstAC = {},
             minTimestamp = Date.now() / 1000 - numDays * 24 * 60 * 60,
             activeUsers = [];
@@ -57,4 +63,4 @@ function refreshTable() {
 }
 
 refreshTable();
-setInterval(refreshTable, refreshTime);
+setInterval(refreshTable, 5000);

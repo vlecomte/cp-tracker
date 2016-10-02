@@ -2,7 +2,6 @@
 
 function UhuntLike(judgeName, url, apiUrl) {
     "use strict";
-    this.name = judgeName;
     var verdicts = {
             0: "???",
             10: "Submission error",
@@ -26,51 +25,39 @@ function UhuntLike(judgeName, url, apiUrl) {
             5: "C++11"
         },
         pdfUrl = url + "external/",
+        Problem = function (num, title) {
+            this.num = num;
+            this.title = title;
+            this.displayName = judgeName + " " + num + " - " + title;
+            this.pdfLink = pdfUrl + Math.floor(num / 100) + "/" + num + ".pdf";
+        },
         problemData = new CachedResults(function (problemId) {
-            return new JsonPromise(apiUrl + "p/id/" + problemId);
-        });
-    
-    function Problem(num, title) {
-        this.num = num;
-        this.title = title;
-        this.displayName = judgeName + " " + num + " - " + title;
-        this.pdfLink = pdfUrl + Math.floor(num / 100) + "/" + num + ".pdf";
-    }
-    
-    function Submission(userName, sub) {
-        this.id = sub[0];
-        this.userName = userName;
-        this.problemId = judgeName + ", id=" + sub[1];
-        this.problem = new Promise(function (resolve, reject) {
-            problemData.get(sub[1]).then(function (data) {
-                resolve(new Problem(data.num, data.title));
+            return new JsonPromise(apiUrl + "p/id/" + problemId).then(function (data) {
+                return new Problem(data.num, data.title);
             });
-        });
-        this.verdict = verdicts[sub[2]];
-        this.lang = langs[sub[5]];
-        this.runTime = sub[3] * 0.001;
-        this.submitTime = sub[4];
-    }
+        }),
+        Submission = function (userName, subDesc) {
+            this.id = subDesc[0];
+            this.userName = userName;
+            this.problemId = judgeName + ", id=" + subDesc[1];
+            this.getProblem = function () { return problemData.get(subDesc[1]); };
+            this.verdict = verdicts[subDesc[2]];
+            this.lang = langs[subDesc[5]];
+            this.runTime = subDesc[3] * 0.001;
+            this.submitTime = subDesc[4];
+        };
     
-    this.userData = new CachedResults(function (userId) {
-        return new JsonPromise(apiUrl + "subs-user/" + userId)
-            .then(function (result) {
-                var data = {
-                    name: result.name,
-                    username: result.uname,
-                    displayName: result.name + " (" + result.uname + ")",
-                    subs: []
-                };
-                result.subs.forEach(function (subDesc) {
-                    data.subs.push(new Submission(data.name, subDesc));
+    this.name = judgeName;
+    this.userSubs = function (userName) {
+        return new CachedResults(function (userId) {
+            return new JsonPromise(apiUrl + "subs-user/" + userId)
+                .then(function (result) {
+                    return result.subs.map(function (subDesc) {
+                        return new Submission(userName, subDesc);
+                    });
                 });
-                // Latest submission first
-                data.subs.sort(function (sub1, sub2) {
-                    return sub2.id - sub1.id;
-                });
-                return data;
-            });
-    }, 2000);
+        }, 2000);
+    };
 }
 
 var uh = new UhuntLike("UVa", "https://uhunt.onlinejudge.org/",
@@ -86,9 +73,9 @@ function getAllSubsForUser(user) {
         var subs = [], received = 0;
         judges.forEach(function (judge) {
             if (user.hasOwnProperty(judge.name)) {
-                judge.userData.get(user[judge.name]).then(function (data) {
+                judge.userSubs(user.name).get(user[judge.name]).then(function (userSubs) {
                     //console.log("receiving subs for " + user[judge.name]);
-                    data.subs.forEach(function (sub) {
+                    userSubs.forEach(function (sub) {
                         subs.push(sub);
                     });
                     received += 1;
