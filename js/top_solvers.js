@@ -1,4 +1,4 @@
-/*global console, uh, uhuntIds, makeCell*/
+/*global console, uh, uhuntIds, makeCell, getAllSubs*/
 
 var numDays = 15; // Time period to compare users
 var refreshTime = 5000; // Time between refreshes (millis)
@@ -14,12 +14,10 @@ function makeTopSolverRow(rank, user) {
 
 function refreshTable() {
     "use strict";
-    var topTable = document.getElementById("top-solvers"),
-        solved = [],
-        received = 0;
+    var topTable = document.getElementById("top-solvers");
     
-    function computeTable() {
-        solved.sort(function (user1, user2) {
+    function computeTable(activeUsers) {
+        activeUsers.sort(function (user1, user2) {
             if (user1.numSolved !== user2.numSolved) {
                 return user2.numSolved - user1.numSolved;
             } else {
@@ -28,35 +26,33 @@ function refreshTable() {
         });
         
         topTable.innerHTML = "";
-        solved.forEach(function (user, rank) {
+        activeUsers.forEach(function (user, rank) {
             topTable.appendChild(makeTopSolverRow(rank + 1, user));
         });
     }
     
-    uhuntIds.forEach(function (userId) {
-        uh.userData.get(userId).then(function (data) {
-            var earliestAccepted = {},
-                minTimestamp = Date.now() / 1000 - numDays * 24 * 60 * 60,
-                solvedLately = 0;
-            data.subs.forEach(function (sub) {
-                if (sub.verdict === "Accepted") {
-                    earliestAccepted[sub.problemId] = sub.submitTime;
-                }
-            });
-            Object.keys(earliestAccepted).forEach(function (problemId) {
-                if (earliestAccepted[problemId] >= minTimestamp) {
+    getAllSubs().then(function (subs) {
+        var firstAC = {},
+            minTimestamp = Date.now() / 1000 - numDays * 24 * 60 * 60,
+            activeUsers = [];
+        subs.forEach(function (sub) {
+            if (!firstAC.hasOwnProperty(sub.userName)) {
+                firstAC[sub.userName] = {};
+            }
+            firstAC[sub.userName][sub.problemId] = sub.submitTime;
+        });
+        Object.keys(firstAC).forEach(function (userName) {
+            var solvedLately = 0;
+            Object.keys(firstAC[userName]).forEach(function (problemId) {
+                if (firstAC[userName][problemId] >= minTimestamp) {
                     solvedLately += 1;
                 }
             });
             if (solvedLately > 0) {
-                solved.push({name: data.name, numSolved: solvedLately});
-            }
-            
-            received += 1;
-            if (received === uhuntIds.length) {
-                computeTable();
+                activeUsers.push({name: userName, numSolved: solvedLately});
             }
         });
+        computeTable(activeUsers);
     });
 }
 

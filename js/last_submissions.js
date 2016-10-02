@@ -1,4 +1,4 @@
-/*global console, uh, uhuntIds, makeCell*/
+/*global console, makeCell, getAllSubs*/
 
 var numSubs = 20; // Number of last submissions to display
 var refreshTime = 5000; // Time between refreshes (millis)
@@ -26,16 +26,14 @@ function makeSubmissionRow(sub) {
         problemCell = document.createElement("th"),
         problemLink = document.createElement("a");
     
-    problemLink.textContent = "Problem " + sub.problemId;
-    problemLink.href = problemPageBase + sub.problemId;
     problemCell.appendChild(problemLink);
     
-    uh.problemData.get(sub.problemId).then(function (data) {
-        problemLink.href = problemPageBase + Math.floor(data.num/100) + "/" + data.num + ".pdf";
-        problemLink.textContent = data.num + " - " + data.title;
+    sub.problem.then(function (problem) {
+        problemLink.href = problem.pdfLink;
+        problemLink.textContent = problem.displayName;
     });
     
-    rowElt.appendChild(makeCell(sub.name));
+    rowElt.appendChild(makeCell(sub.userName));
     rowElt.appendChild(problemCell);
     rowElt.appendChild(makeCell(sub.verdict));
     rowElt.appendChild(makeCell(sub.lang));
@@ -46,15 +44,9 @@ function makeSubmissionRow(sub) {
 
 function refreshTable() {
     "use strict";
-    var subTable = document.getElementById("submissions-table"),
-        subs = [],
-        received = 0;
+    var subTable = document.getElementById("submissions-table");
     
-    function computeTable() {
-        // Sort by decreasing submission ID
-        subs.sort(function (sub1, sub2) {
-            return sub2.id - sub1.id;
-        });
+    function computeTable(subs) {
         // Truncate to first numSubs elements
         subs.length = Math.min(subs.length, numSubs);
         // Clear and refill table
@@ -65,17 +57,7 @@ function refreshTable() {
     }
     
     // Load last numSubs submissions for each user
-    uhuntIds.forEach(function (userId) {
-        uh.userData.get(userId).then(function (data) {
-            data.subs.forEach(function (sub) {
-                subs.push(sub);
-            });
-            received += 1;
-            if (received === uhuntIds.length) {
-                computeTable();
-            }
-        });
-    });
+    getAllSubs().then(computeTable);
 }
 
 refreshTable();
