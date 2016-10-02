@@ -2,7 +2,7 @@
 
 var numSubs = 20; // Number of last submissions to display
 var refreshTime = 5000; // Time between refreshes (millis)
-var problemPageBase = "https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=";
+var problemPageBase = "https://uva.onlinejudge.org/external/";
 
 function formatTime(timestamp) {
     "use strict";
@@ -31,6 +31,7 @@ function makeSubmissionRow(sub) {
     problemCell.appendChild(problemLink);
     
     uh.problemData.get(sub.problemId).then(function (data) {
+        problemLink.href = problemPageBase + Math.floor(data.num/100) + "/" + data.num + ".pdf";
         problemLink.textContent = data.num + " - " + data.title;
     });
     
