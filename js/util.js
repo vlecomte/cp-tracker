@@ -35,7 +35,7 @@ function CachedResults(produce, timeout) {
 
 function makeCell(content) {
     "use strict";
-    var cellElt = document.createElement("th");
+    var cellElt = document.createElement("td");
     cellElt.textContent = content;
     return cellElt;
 }
